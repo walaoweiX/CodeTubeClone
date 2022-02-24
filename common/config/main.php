@@ -1,5 +1,6 @@
 <?php
 return [
+    'name' => 'CodeTubeClone',
     'aliases' => [
         '@bower' => '@vendor/bower-asset',
         '@npm'   => '@vendor/npm-asset',

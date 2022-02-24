@@ -3,6 +3,7 @@
 namespace backend\controllers;
 
 use common\models\LoginForm;
+use common\models\Subscriber;
 use Yii;
 use yii\filters\VerbFilter;
 use yii\filters\AccessControl;
@@ -62,7 +63,36 @@ class SiteController extends Controller
      */
     public function actionIndex()
     {
-        return $this->render('index');
+        $user = Yii::$app->user->identity;
+        $userId = $user->id;
+        
+
+        $latestVideo = \common\models\Video::find()
+            ->latest()
+            ->creator($userId)
+        	->limit(1)
+        	->one();
+        
+        $numberOfViews = \common\models\VideoView::find()
+            ->alias('vv')
+            ->innerJoin(\common\models\Video::tableName() . ' v', 'v.video_id = vv.video_id')
+            ->andWhere(['v.created_by' => $userId])
+            ->count();
+        
+        $numberOfSubscriber = $user->getSubscribers()->count();
+        $subscribers = Subscriber::find()
+        	->with('user')
+            ->andWhere(['channel_id' => $userId,])
+            ->orderBy('created_at DESC')
+        	->limit(3)
+        	->all();
+
+        return $this->render('index', [
+            'latestVideo' => $latestVideo,
+            'numberOfViews' => $numberOfViews,
+            'numberOfSubscriber' => $numberOfSubscriber,
+            'subscribers' => $subscribers,
+        ]);
     }
 
     /**
